@@ -15,9 +15,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Firebase Firestore implementation of IPlayerRepository.
- */
+
 public class FirebasePlayerRepository implements IPlayerRepository {
     private static final String TAG = "FirebasePlayerRepo";
     private static final String COLLECTION_NAME = "players";
@@ -41,7 +39,7 @@ public class FirebasePlayerRepository implements IPlayerRepository {
         playerData.put("clubId", player.getClubId());
 
         if (player.getId() != null) {
-            // Update existing player - find by ID field
+
             playerData.put("id", player.getId());
             
             db.collection(COLLECTION_NAME)
@@ -64,7 +62,7 @@ public class FirebasePlayerRepository implements IPlayerRepository {
                                         latch.countDown();
                                     });
                         } else {
-                            // No existing document found, create new one
+
                             Log.w(TAG, "No player found with ID " + player.getId() + ", creating new");
                             player.setId(null); // Reset ID to create new
                             result[0] = save(player); // Recursive call to create
@@ -76,7 +74,7 @@ public class FirebasePlayerRepository implements IPlayerRepository {
                         latch.countDown();
                     });
         } else {
-            // Create new player
+
             db.collection(COLLECTION_NAME)
                     .add(playerData)
                     .addOnSuccessListener(documentReference -> {
@@ -84,7 +82,7 @@ public class FirebasePlayerRepository implements IPlayerRepository {
                         int playerId = docId.hashCode(); // Using hashCode for integer ID
                         player.setId(playerId);
                         
-                        // Update the document with the ID field
+
                         documentReference.update("id", playerId)
                                 .addOnSuccessListener(aVoid -> {
                                     result[0] = player;
@@ -150,7 +148,7 @@ public class FirebasePlayerRepository implements IPlayerRepository {
                 .orderBy("name", Query.Direction.ASCENDING)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    // Use a Set to track player IDs and prevent duplicates
+
                     java.util.Set<Integer> seenIds = new java.util.HashSet<>();
                     
                     for (DocumentSnapshot document : querySnapshot.getDocuments()) {
@@ -192,8 +190,7 @@ public class FirebasePlayerRepository implements IPlayerRepository {
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     Log.d(TAG, "Query returned " + querySnapshot.size() + " documents");
-                    
-                    // Use a Set to track player IDs and prevent duplicates
+
                     java.util.Set<Integer> seenIds = new java.util.HashSet<>();
                     
                     for (DocumentSnapshot document : querySnapshot.getDocuments()) {
@@ -262,8 +259,8 @@ public class FirebasePlayerRepository implements IPlayerRepository {
     private Player documentToPlayer(DocumentSnapshot document) {
         try {
             Player player = new Player();
-            
-            // Try to get ID from document field first, fallback to hashCode
+
+
             Long idLong = document.getLong("id");
             if (idLong != null) {
                 player.setId(idLong.intValue());

@@ -16,10 +16,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Firebase implementation of IUserRepository.
- * Uses Firebase Authentication for login and Firestore for user data.
- */
+
 public class FirebaseUserRepository implements IUserRepository {
     private static final String TAG = "FirebaseUserRepo";
     private static final String COLLECTION_NAME = "users";
@@ -47,7 +44,7 @@ public class FirebaseUserRepository implements IUserRepository {
         userData.put("approved", user.isApproved());
 
         if (user.getId() != null) {
-            // Update existing user - need to find by username or email since we don't store the Firestore doc ID
+
             Log.d(TAG, "Updating user: " + user.getUsername() + ", Approved: " + user.isApproved());
             db.collection(COLLECTION_NAME)
                     .whereEqualTo("username", user.getUsername())
@@ -77,14 +74,14 @@ public class FirebaseUserRepository implements IUserRepository {
                         latch.countDown();
                     });
         } else {
-            // Create new user
+
             Log.d(TAG, "Creating new user in Firestore: " + user.getUsername() + ", Approved: " + user.isApproved());
             db.collection(COLLECTION_NAME)
                     .add(userData)
                     .addOnSuccessListener(documentReference -> {
                         String docId = documentReference.getId();
                         user.setId(docId.hashCode());
-                        // Store the actual document ID for future updates
+
                         userData.put("firestoreDocId", docId);
                         userData.put("id", user.getId());
                         documentReference.set(userData);
@@ -145,8 +142,7 @@ public class FirebaseUserRepository implements IUserRepository {
 
     @Override
     public User findByUsernameAndPassword(String username, String password) {
-        // This method is deprecated in favor of Firebase Authentication
-        // Use authenticateWithEmail or authenticateWithUsername instead
+
         return findByUsername(username);
     }
 
@@ -212,9 +208,7 @@ public class FirebaseUserRepository implements IUserRepository {
         return result;
     }
 
-    /**
-     * Find user by email address
-     */
+
     public User findByEmail(String email) {
         CountDownLatch latch = new CountDownLatch(1);
         final User[] result = new User[1];
@@ -243,9 +237,7 @@ public class FirebaseUserRepository implements IUserRepository {
         return result[0];
     }
 
-    /**
-     * Get currently authenticated Firebase user's data
-     */
+
     public User getCurrentUser() {
         FirebaseUser firebaseUser = auth.getCurrentUser();
         if (firebaseUser != null) {
@@ -302,18 +294,22 @@ public class FirebaseUserRepository implements IUserRepository {
             Log.e(TAG, "Error converting document to user", e);
             return null;
         }
+
     }
+
     
     @Override
     public boolean delete(Integer userId) {
+
         if (userId == null) {
             return false;
+
         }
         
         CountDownLatch latch = new CountDownLatch(1);
         final boolean[] result = new boolean[]{false};
         
-        // Find user document by ID (try both id field and firestoreDocId)
+
         db.collection(COLLECTION_NAME)
                 .whereEqualTo("id", userId)
                 .get()
@@ -351,9 +347,7 @@ public class FirebaseUserRepository implements IUserRepository {
         return result[0];
     }
     
-    /**
-     * Delete user by username (more reliable than ID)
-     */
+
     public boolean deleteByUsername(String username) {
         if (username == null || username.isEmpty()) {
             return false;
@@ -389,6 +383,7 @@ public class FirebaseUserRepository implements IUserRepository {
                     Log.e(TAG, "Error finding user to delete", e);
                     latch.countDown();
                 });
+
         
         try {
             latch.await(10, TimeUnit.SECONDS);

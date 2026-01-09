@@ -3,11 +3,7 @@ package com.example.coachesapp_android.database;
 import com.example.coachesapp_android.model.Player;
 import java.util.List;
 
-/**
- * Repository interface for Player data operations.
- * Implement this interface with Firebase or another data backend.
- * Example: PlayerRepositoryFirebase
- */
+
 public interface IPlayerRepository {
     Player save(Player player);
     Player findById(int id);

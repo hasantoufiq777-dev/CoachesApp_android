@@ -14,9 +14,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Firebase Firestore implementation of IClubRepository.
- */
+
 public class FirebaseClubRepository implements IClubRepository {
     private static final String TAG = "FirebaseClubRepo";
     private static final String COLLECTION_NAME = "clubs";
@@ -192,16 +190,16 @@ public class FirebaseClubRepository implements IClubRepository {
         try {
             Club club = new Club();
             
-            // Read the numeric ID from the document field
+
             Long idLong = document.getLong("id");
             if (idLong != null) {
                 club.setId(idLong.intValue());
             } else {
-                // Fallback to hashCode if id field doesn't exist (old data)
+
                 club.setId(document.getId().hashCode());
             }
             
-            // Store the actual Firestore document ID
+
             club.setFirestoreDocId(document.getId());
             club.setClubName(document.getString("name"));
             
