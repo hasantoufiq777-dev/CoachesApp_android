@@ -126,6 +126,6 @@
             android:layout_height="56dp"
             android:text="Back"
             android:textColor="#ffffff"
-            android:backgroundTint="#5f6368"/>
+            android:backgroundTint="#e67e22"/>
     </LinearLayout>
 </ScrollView>

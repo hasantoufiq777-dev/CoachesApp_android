@@ -57,7 +57,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:text="All"/>
+                android:text="All"
+                app:strokeWidth="3dp"
+                app:strokeColor="#5E35B1"/>
 
             <Button
                 android:id="@+id/filterPendingButton"
@@ -65,7 +67,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:text="Pending"/>
+                android:text="Pending"
+                app:strokeWidth="3dp"
+                app:strokeColor="#5E35B1"/>
 
             <Button
                 android:id="@+id/filterInMarketButton"
@@ -73,14 +77,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:text="In Market"/>
+                android:text="In Market"
+                app:strokeWidth="3dp"
+                app:strokeColor="#5E35B1"/>
 
             <Button
                 android:id="@+id/filterCompletedButton"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Completed"/>
+                android:text="Completed"
+                app:strokeWidth="3dp"
+                app:strokeColor="#5E35B1"/>
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -128,7 +136,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Back"
-            android:backgroundTint="#757575"/>
+            android:backgroundTint="#e67e22"/>
 
         <Button
             android:id="@+id/newRequestButton"

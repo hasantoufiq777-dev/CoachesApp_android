@@ -62,5 +62,5 @@
         android:layout_height="wrap_content"
         android:text="Back"
         android:layout_marginTop="16dp"
-        android:backgroundTint="#95a5a6"/>
+        android:backgroundTint="#e67e22"/>
 </LinearLayout>

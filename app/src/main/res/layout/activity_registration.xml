@@ -189,6 +189,6 @@
             android:layout_height="56dp"
             android:text="Back to Login"
             android:textSize="16sp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            android:backgroundTint="#e67e22"/>
     </LinearLayout>
 </ScrollView>

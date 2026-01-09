@@ -32,6 +32,6 @@
         android:layout_height="wrap_content" 
         android:text="Back" 
         android:layout_marginTop="16dp"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+        android:backgroundTint="#e67e22"/>
 
 </LinearLayout>

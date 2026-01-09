@@ -119,6 +119,6 @@
             android:layout_height="56dp"
             android:text="Cancel"
             android:textSize="16sp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            android:backgroundTint="#e67e22"/>
     </LinearLayout>
 </ScrollView>
