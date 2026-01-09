@@ -513,12 +513,19 @@ public class TransferRequestActivity extends AppCompatActivity {
     
     private void approveMarketTransfer(TransferRequest request, double releaseFee) {
         Log.d(TAG, "Approving market transfer - Player: " + request.getPlayerName() + 
-                ", SourceClubId: " + request.getSourceClubId() + ", ReleaseFee: $" + releaseFee);
+                ", PlayerId: " + request.getPlayerId() +
+                ", SourceClubId: " + request.getSourceClubId() + 
+                ", SourceClubName: " + request.getSourceClubName() +
+                ", ReleaseFee: $" + releaseFee);
         
         new Thread(() -> {
             request.setStatus(TransferRequest.TransferStatus.IN_MARKET);
             request.setApprovedBySourceDate(LocalDateTime.now());
             request.setReleaseFee(releaseFee);
+            
+            Log.d(TAG, "About to update transfer request - ID: " + request.getId() + 
+                    ", PlayerId: " + request.getPlayerId() + 
+                    ", PlayerName: " + request.getPlayerName());
             
             Log.d(TAG, "Updating transfer request with IN_MARKET status");
             boolean success = transferRequestRepository.update(request);

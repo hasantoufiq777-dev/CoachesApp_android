@@ -284,12 +284,19 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
     }
 
     private void enrichTransferRequest(TransferRequest transferRequest) {
+        Log.d(TAG, "Enriching transfer request - ID: " + transferRequest.getId() + ", PlayerId: " + transferRequest.getPlayerId());
+        
         // Get player name
         if (transferRequest.getPlayerId() != null) {
             Player player = playerRepository.findById(transferRequest.getPlayerId());
             if (player != null) {
                 transferRequest.setPlayerName(player.getName());
+                Log.d(TAG, "Enriched with player name: " + player.getName());
+            } else {
+                Log.w(TAG, "Player not found for ID: " + transferRequest.getPlayerId());
             }
+        } else {
+            Log.w(TAG, "PlayerId is NULL in transfer request!");
         }
 
         // Get source club name
@@ -297,6 +304,9 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
             Club sourceClub = clubRepository.findById(transferRequest.getSourceClubId());
             if (sourceClub != null) {
                 transferRequest.setSourceClubName(sourceClub.getClubName());
+                Log.d(TAG, "Enriched with source club name: " + sourceClub.getClubName());
+            } else {
+                Log.w(TAG, "Source club not found for ID: " + transferRequest.getSourceClubId());
             }
         }
 
@@ -305,6 +315,7 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
             Club destClub = clubRepository.findById(transferRequest.getDestinationClubId());
             if (destClub != null) {
                 transferRequest.setDestinationClubName(destClub.getClubName());
+                Log.d(TAG, "Enriched with destination club name: " + destClub.getClubName());
             }
         }
     }

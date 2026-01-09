@@ -102,8 +102,8 @@ public class TransferMarketActivity extends AppCompatActivity {
             positions.add(pos.name());
         }
 
-        ArrayAdapter<String> posAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, positions);
-        posAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> posAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, positions);
+        posAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         positionFilterSpinner.setAdapter(posAdapter);
 
         positionFilterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -200,11 +200,28 @@ public class TransferMarketActivity extends AppCompatActivity {
     }
 
     private Player getPlayerById(Integer playerId) {
+        android.util.Log.d("TransferMarket", "Looking for player with ID: " + playerId + " in " + allPlayers.size() + " players");
+        
+        if (playerId == null) {
+            android.util.Log.w("TransferMarket", "PlayerId is NULL!");
+            return null;
+        }
+        
         for (Player p : allPlayers) {
-            if (p.getId().equals(playerId)) {
+            if (p.getId() != null && p.getId().equals(playerId)) {
+                android.util.Log.d("TransferMarket", "Found player: " + p.getName() + " (ID: " + p.getId() + ")");
                 return p;
             }
         }
+        
+        android.util.Log.w("TransferMarket", "Player with ID " + playerId + " NOT FOUND in allPlayers list!");
+        // Log all player IDs for debugging
+        StringBuilder ids = new StringBuilder("Available player IDs: ");
+        for (Player p : allPlayers) {
+            ids.append(p.getId()).append(", ");
+        }
+        android.util.Log.d("TransferMarket", ids.toString());
+        
         return null;
     }
 
@@ -289,16 +306,27 @@ public class TransferMarketActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             TransferRequest request = filteredMarketRequests.get(position);
+            
+            android.util.Log.d("TransferMarket", "Binding position " + position + ": PlayerId=" + request.getPlayerId() + 
+                    ", PlayerName from request=" + request.getPlayerName() + 
+                    ", SourceClubId=" + request.getSourceClubId() + 
+                    ", SourceClubName=" + request.getSourceClubName());
+            
             Player player = getPlayerById(request.getPlayerId());
-
+            
             if (player != null) {
+                android.util.Log.d("TransferMarket", "Found player object: " + player.getName() + 
+                        ", Position=" + player.getPosition() + ", Age=" + player.getAge());
                 holder.marketPlayerName.setText(player.getName());
                 holder.marketPlayerPosition.setText(player.getPosition() != null ? player.getPosition().name() : "N/A");
                 holder.marketPlayerAge.setText("Age: " + player.getAge());
                 holder.marketPlayerJersey.setText("Jersey: #" + player.getJersey());
             } else {
-                holder.marketPlayerName.setText(request.getPlayerName() != null ? request.getPlayerName() : "Unknown Player");
-                holder.marketPlayerPosition.setText("N/A");
+                android.util.Log.w("TransferMarket", "Player object is NULL! Using fallback from TransferRequest. Total players loaded: " + allPlayers.size());
+                // Use data from TransferRequest as fallback
+                String playerName = request.getPlayerName() != null ? request.getPlayerName() : "Unknown Player";
+                holder.marketPlayerName.setText(playerName);
+                holder.marketPlayerPosition.setText("Position: N/A");
                 holder.marketPlayerAge.setText("Age: N/A");
                 holder.marketPlayerJersey.setText("Jersey: N/A");
             }

@@ -93,13 +93,13 @@
                 android:textColor="#999"/>
         </LinearLayout>
 
-        <!-- Request Transfer Button -->
+        <!-- Purchase Button -->
         <Button
             android:id="@+id/requestTransferButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Request Transfer"
+            android:text="Purchase"
             android:backgroundTint="#00897b"/>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
