@@ -1,4 +1,4 @@
-package com.example.coachesapp_android.database;
+package com.example.coachesapp_android.repository;
 
 import android.util.Log;
 import com.example.coachesapp_android.database.IClubRepository;
@@ -6,7 +6,6 @@ import com.example.coachesapp_android.database.IPlayerRepository;
 import com.example.coachesapp_android.model.Club;
 import com.example.coachesapp_android.model.Player;
 import com.example.coachesapp_android.model.TransferRequest;
-import com.example.coachesapp_android.repository.ITransferRequestRepository;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;

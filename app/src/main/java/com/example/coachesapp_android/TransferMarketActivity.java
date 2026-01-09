@@ -26,7 +26,7 @@ import com.example.coachesapp_android.model.TransferRequest;
 import com.example.coachesapp_android.model.User;
 import com.example.coachesapp_android.database.FirebaseClubRepository;
 import com.example.coachesapp_android.database.FirebasePlayerRepository;
-import com.example.coachesapp_android.database.FirebaseTransferRequestRepository;
+import com.example.coachesapp_android.repository.FirebaseTransferRequestRepository;
 import com.example.coachesapp_android.database.IClubRepository;
 import com.example.coachesapp_android.database.IPlayerRepository;
 import com.example.coachesapp_android.repository.ITransferRequestRepository;
