@@ -257,6 +257,10 @@ public class TransferMarketActivity extends AppCompatActivity {
 
     private void completePurchase(TransferRequest marketRequest, Player player, double releaseFee) {
         new Thread(() -> {
+            android.util.Log.d("TransferMarket", "Starting purchase - PlayerId: " + marketRequest.getPlayerId() + 
+                    ", From Club: " + marketRequest.getSourceClubId() + 
+                    ", To Club: " + currentUser.getClubId());
+            
             // Update the existing market request with destination club and complete it
             marketRequest.setDestinationClubId(currentUser.getClubId());
             
@@ -265,9 +269,10 @@ public class TransferMarketActivity extends AppCompatActivity {
                 com.example.coachesapp_android.model.Club club = clubRepository.findById(currentUser.getClubId());
                 if (club != null) {
                     marketRequest.setDestinationClubName(club.getClubName());
+                    android.util.Log.d("TransferMarket", "Destination club name: " + club.getClubName());
                 }
             } catch (Exception e) {
-                // Ignore if club name can't be fetched
+                android.util.Log.e("TransferMarket", "Error fetching club name", e);
             }
             
             marketRequest.setTransferFee(releaseFee);
@@ -275,11 +280,25 @@ public class TransferMarketActivity extends AppCompatActivity {
             marketRequest.setCompletedDate(LocalDateTime.now());
             
             boolean success = transferRequestRepository.update(marketRequest);
+            android.util.Log.d("TransferMarket", "Transfer request update success: " + success);
             
-            if (success && player != null) {
-                // Update player's club
-                player.setClubId(currentUser.getClubId());
-                playerRepository.update(player);
+            // Update player's club - fetch fresh player if needed
+            if (success) {
+                Player playerToUpdate = player;
+                if (playerToUpdate == null && marketRequest.getPlayerId() != null) {
+                    android.util.Log.d("TransferMarket", "Player was null, fetching from repository...");
+                    playerToUpdate = playerRepository.findById(marketRequest.getPlayerId());
+                }
+                
+                if (playerToUpdate != null) {
+                    android.util.Log.d("TransferMarket", "Updating player " + playerToUpdate.getName() + 
+                            " from club " + playerToUpdate.getClubId() + " to club " + currentUser.getClubId());
+                    playerToUpdate.setClubId(currentUser.getClubId());
+                    boolean playerUpdateSuccess = playerRepository.update(playerToUpdate);
+                    android.util.Log.d("TransferMarket", "Player club update success: " + playerUpdateSuccess);
+                } else {
+                    android.util.Log.e("TransferMarket", "FAILED: Could not find player with ID: " + marketRequest.getPlayerId());
+                }
             }
             
             runOnUiThread(() -> {
