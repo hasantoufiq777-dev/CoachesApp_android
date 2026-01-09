@@ -420,61 +420,37 @@ public class TransferRequestActivity extends AppCompatActivity {
     }
 
     private void approveTransferRequest(TransferRequest request) {
-        // Check if this is a general market transfer
+        // Both transfer types now require setting a fee
         if (request.getTransferType() == TransferRequest.TransferType.GENERAL_MARKET) {
-            // Prompt for release fee
-            showReleaseFeeDialog(request);
+            // Prompt for release fee for general market
+            showReleaseFeeDialog(request, true);
         } else {
-            // Direct club transfer - approve directly
-            new AlertDialog.Builder(this)
-                    .setTitle("Approve Transfer")
-                    .setMessage("Approve transfer request for " + request.getPlayerName() + " to " + request.getDestinationClubName() + "?")
-                    .setPositiveButton("Approve", (dialog, which) -> {
-                        new Thread(() -> {
-                            request.setStatus(TransferRequest.TransferStatus.COMPLETED);
-                            request.setApprovedBySourceDate(LocalDateTime.now());
-                            request.setCompletedDate(LocalDateTime.now());
-                            
-                            // Update player's club
-                            Player player = playerRepository.findById(request.getPlayerId());
-                            if (player != null) {
-                                player.setClubId(request.getDestinationClubId());
-                                playerRepository.update(player);
-                            }
-                            
-                            boolean success = transferRequestRepository.update(request);
-                            
-                            runOnUiThread(() -> {
-                                if (success) {
-                                    Toast.makeText(this, "Transfer approved and completed", Toast.LENGTH_SHORT).show();
-                                    loadTransferRequests();
-                                } else {
-                                    Toast.makeText(this, "Failed to approve transfer", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }).start();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+            // Direct club transfer - also requires setting transfer fee
+            showReleaseFeeDialog(request, false);
         }
     }
     
-    private void showReleaseFeeDialog(TransferRequest request) {
+    private void showReleaseFeeDialog(TransferRequest request, boolean isGeneralMarket) {
         // Create a properly formatted dialog view
         LinearLayout dialogLayout = new LinearLayout(this);
         dialogLayout.setOrientation(LinearLayout.VERTICAL);
         dialogLayout.setPadding(50, 40, 50, 10);
         
         EditText releaseFeeInput = new EditText(this);
-        releaseFeeInput.setHint("Enter release fee (e.g., 50000)");
+        releaseFeeInput.setHint("Enter transfer fee (e.g., 50000)");
         releaseFeeInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
         dialogLayout.addView(releaseFeeInput);
         
-        Log.d(TAG, "Showing release fee dialog for player: " + request.getPlayerName());
+        String title = isGeneralMarket ? "Approve Market Transfer" : "Approve Direct Transfer";
+        String message = isGeneralMarket 
+            ? "Set release fee for " + request.getPlayerName() + " to enter the transfer market"
+            : "Set transfer fee for " + request.getPlayerName() + " to transfer to " + request.getDestinationClubName();
+        
+        Log.d(TAG, "Showing release fee dialog for player: " + request.getPlayerName() + ", Type: " + request.getTransferType());
         
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Approve Market Transfer")
-                .setMessage("Set release fee for " + request.getPlayerName() + " to enter the transfer market")
+                .setTitle(title)
+                .setMessage(message)
                 .setView(dialogLayout)
                 .setPositiveButton("Approve", null) // Set to null, we'll override below
                 .setNegativeButton("Cancel", null)
@@ -486,7 +462,7 @@ public class TransferRequestActivity extends AppCompatActivity {
                 String feeStr = releaseFeeInput.getText().toString().trim();
                 
                 if (feeStr.isEmpty()) {
-                    Toast.makeText(this, "Please enter a release fee", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please enter a transfer fee", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 
@@ -494,7 +470,7 @@ public class TransferRequestActivity extends AppCompatActivity {
                 try {
                     fee = Double.parseDouble(feeStr);
                     if (fee <= 0) {
-                        Toast.makeText(this, "Release fee must be greater than 0", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Transfer fee must be greater than 0", Toast.LENGTH_SHORT).show();
                         return;
                     }
                 } catch (NumberFormatException e) {
@@ -502,8 +478,12 @@ public class TransferRequestActivity extends AppCompatActivity {
                     return;
                 }
 
-                Log.d(TAG, "Approving market transfer with fee: $" + fee);
-                approveMarketTransfer(request, fee);
+                Log.d(TAG, "Approving transfer with fee: $" + fee);
+                if (isGeneralMarket) {
+                    approveMarketTransfer(request, fee);
+                } else {
+                    approveDirectClubTransfer(request, fee);
+                }
                 dialog.dismiss();
             });
         });
@@ -539,6 +519,46 @@ public class TransferRequestActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (success) {
                     Toast.makeText(this, "Player approved for transfer market!\nRelease Fee: $" + String.format("%.2f", releaseFee), Toast.LENGTH_LONG).show();
+                    loadTransferRequests();
+                } else {
+                    Toast.makeText(this, "Failed to approve transfer", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }).start();
+    }
+    
+    private void approveDirectClubTransfer(TransferRequest request, double transferFee) {
+        Log.d(TAG, "Approving direct club transfer - Player: " + request.getPlayerName() + 
+                ", From: " + request.getSourceClubName() + 
+                ", To: " + request.getDestinationClubName() +
+                ", Fee: $" + transferFee);
+        
+        new Thread(() -> {
+            Log.d(TAG, "BEFORE UPDATE - Request status: " + request.getStatus() + ", ID: " + request.getId());
+            
+            // Set status to IN_MARKET so destination manager can see and accept it
+            request.setStatus(TransferRequest.TransferStatus.IN_MARKET);
+            request.setApprovedBySourceDate(LocalDateTime.now());
+            request.setReleaseFee(transferFee);
+            
+            Log.d(TAG, "AFTER SETTING - Request status: " + request.getStatus() + 
+                    ", ReleaseFee: " + request.getReleaseFee() + 
+                    ", TransferType: " + request.getTransferType());
+            
+            boolean success = transferRequestRepository.update(request);
+            
+            if (success) {
+                Log.d(TAG, "✓ Direct transfer approved and saved. Status=IN_MARKET, Fee=$" + transferFee);
+                Log.d(TAG, "  Player: " + request.getPlayerName() + 
+                        ", SourceClub: " + request.getSourceClubId() + 
+                        ", DestClub: " + request.getDestinationClubId());
+            } else {
+                Log.e(TAG, "✗ FAILED to approve direct transfer - update returned false");
+            }
+            
+            runOnUiThread(() -> {
+                if (success) {
+                    Toast.makeText(this, "Transfer approved! Waiting for " + request.getDestinationClubName() + " manager to accept.\nFee: $" + String.format("%.2f", transferFee), Toast.LENGTH_LONG).show();
                     loadTransferRequests();
                 } else {
                     Toast.makeText(this, "Failed to approve transfer", Toast.LENGTH_SHORT).show();

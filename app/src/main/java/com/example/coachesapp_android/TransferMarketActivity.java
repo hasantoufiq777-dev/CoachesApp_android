@@ -133,6 +133,7 @@ public class TransferMarketActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 android.util.Log.d("TransferMarket", "Loading market players...");
+                android.util.Log.d("TransferMarket", "Current user club ID: " + currentUser.getClubId());
                 
                 // Get all transfer requests with IN_MARKET status
                 allMarketRequests = transferRequestRepository.findInMarket();
@@ -141,7 +142,11 @@ public class TransferMarketActivity extends AppCompatActivity {
                 // Log each market player
                 for (TransferRequest req : allMarketRequests) {
                     android.util.Log.d("TransferMarket", "  - Player: " + req.getPlayerName() + 
-                            ", Fee: $" + req.getReleaseFee() + ", Status: " + req.getStatus());
+                            ", Type: " + req.getTransferType() +
+                            ", SourceClub: " + req.getSourceClubId() +
+                            ", DestClub: " + req.getDestinationClubId() +
+                            ", Fee: $" + req.getReleaseFee() + 
+                            ", Status: " + req.getStatus());
                 }
                 
                 // Load all players for reference
@@ -175,17 +180,54 @@ public class TransferMarketActivity extends AppCompatActivity {
 
     private void filterMarketPlayers() {
         filteredMarketRequests.clear();
+        
+        android.util.Log.d("TransferMarket", "=== FILTERING MARKET PLAYERS ===");
+        android.util.Log.d("TransferMarket", "Total requests to filter: " + allMarketRequests.size());
+        android.util.Log.d("TransferMarket", "Current manager club ID: " + currentUser.getClubId());
 
-        if (selectedPosition == null) {
-            filteredMarketRequests.addAll(allMarketRequests);
-        } else {
-            for (TransferRequest tr : allMarketRequests) {
-                Player player = getPlayerById(tr.getPlayerId());
-                if (player != null && player.getPosition() == selectedPosition) {
-                    filteredMarketRequests.add(tr);
+        for (TransferRequest tr : allMarketRequests) {
+            android.util.Log.d("TransferMarket", "Checking transfer: " + tr.getPlayerName() + 
+                    ", Type: " + tr.getTransferType() + 
+                    ", SourceClub: " + tr.getSourceClubId() + 
+                    ", DestClub: " + tr.getDestinationClubId());
+            
+            // For DIRECT_CLUB transfers, only show to the destination club manager
+            if (tr.getTransferType() == TransferRequest.TransferType.DIRECT_CLUB) {
+                // Only show if this manager is the destination club manager
+                if (currentUser.getClubId() != null && currentUser.getClubId().equals(tr.getDestinationClubId())) {
+                    android.util.Log.d("TransferMarket", "  -> DIRECT_CLUB match! Adding to filtered list");
+                    // Apply position filter if needed
+                    if (selectedPosition == null) {
+                        filteredMarketRequests.add(tr);
+                    } else {
+                        Player player = getPlayerById(tr.getPlayerId());
+                        if (player != null && player.getPosition() == selectedPosition) {
+                            filteredMarketRequests.add(tr);
+                        }
+                    }
+                } else {
+                    android.util.Log.d("TransferMarket", "  -> DIRECT_CLUB but not for this manager (dest=" + tr.getDestinationClubId() + ")");
+                }
+            } else {
+                // GENERAL_MARKET transfers - show to everyone except source club
+                if (currentUser.getClubId() == null || !currentUser.getClubId().equals(tr.getSourceClubId())) {
+                    android.util.Log.d("TransferMarket", "  -> GENERAL_MARKET match! Adding to filtered list");
+                    // Apply position filter if needed
+                    if (selectedPosition == null) {
+                        filteredMarketRequests.add(tr);
+                    } else {
+                        Player player = getPlayerById(tr.getPlayerId());
+                        if (player != null && player.getPosition() == selectedPosition) {
+                            filteredMarketRequests.add(tr);
+                        }
+                    }
+                } else {
+                    android.util.Log.d("TransferMarket", "  -> GENERAL_MARKET but from own club, skipping");
                 }
             }
         }
+        
+        android.util.Log.d("TransferMarket", "Filtered result: " + filteredMarketRequests.size() + " players");
 
         runOnUiThread(() -> {
             adapter.notifyDataSetChanged();

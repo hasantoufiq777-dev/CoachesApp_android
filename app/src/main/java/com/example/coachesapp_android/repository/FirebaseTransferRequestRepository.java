@@ -182,7 +182,21 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
 
     @Override
     public List<TransferRequest> findInMarket() {
-        return findByStatus(TransferRequest.TransferStatus.IN_MARKET);
+        Log.d(TAG, "🔍 QUERY START - Finding transfers with status IN_MARKET");
+        List<TransferRequest> results = findByStatus(TransferRequest.TransferStatus.IN_MARKET);
+        Log.d(TAG, "🔍 QUERY RESULT - Found " + results.size() + " transfers in market");
+        
+        // Log details of each found transfer
+        for (int i = 0; i < results.size(); i++) {
+            TransferRequest tr = results.get(i);
+            Log.d(TAG, "  " + (i+1) + ". Player=" + tr.getPlayerName() + 
+                    ", Type=" + tr.getTransferType() + 
+                    ", SourceClub=" + tr.getSourceClubId() + 
+                    ", DestClub=" + tr.getDestinationClubId() +
+                    ", Fee=$" + tr.getReleaseFee());
+        }
+        
+        return results;
     }
 
     private List<TransferRequest> findByField(String fieldName, Object value) {
@@ -230,29 +244,42 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
         AtomicReference<Boolean> result = new AtomicReference<>(false);
 
         try {
+            Log.d(TAG, "⚙ UPDATE START - ID=" + transferRequest.getId() + 
+                    ", Status=" + transferRequest.getStatus() + 
+                    ", ReleaseFee=" + transferRequest.getReleaseFee());
+            
             enrichTransferRequest(transferRequest);
             Map<String, Object> data = transferRequestToMap(transferRequest);
             String docId = "transfer_" + transferRequest.getId();
+            
+            // Log the exact data being saved to Firebase
+            Log.d(TAG, "⚙ Firebase document: " + docId);
+            Log.d(TAG, "⚙ Data map contains: status=" + data.get("status") + 
+                    ", releaseFee=" + data.get("releaseFee") + 
+                    ", transferType=" + data.get("transferType"));
 
             db.collection(COLLECTION_NAME)
                     .document(docId)
                     .set(data)
                     .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Transfer request updated: " + transferRequest.getId());
+                        Log.d(TAG, "✓ UPDATE SUCCESS - Transfer " + transferRequest.getId() + 
+                                " saved with status=" + data.get("status"));
                         result.set(true);
                         latch.countDown();
                     })
                     .addOnFailureListener(e -> {
-                        Log.e(TAG, "Error updating transfer request", e);
+                        Log.e(TAG, "✗ UPDATE FAILED - Transfer " + transferRequest.getId(), e);
                         latch.countDown();
                     });
 
             latch.await();
         } catch (Exception e) {
-            Log.e(TAG, "Exception in update", e);
+            Log.e(TAG, "✗ EXCEPTION in update", e);
         }
 
-        return result.get();
+        boolean success = result.get();
+        Log.d(TAG, "⚙ UPDATE RESULT: " + (success ? "SUCCESS" : "FAILED"));
+        return success;
     }
 
     @Override
