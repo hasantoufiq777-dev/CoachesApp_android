@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CoachesApp_android">
+        
+        <!-- Login Activity as the launcher -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <!-- Main Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+            
+        <!-- Registration -->
+        <activity
+            android:name=".RegistrationActivity"
+            android:exported="false" />
+            
+        <!-- Player Activities -->
+        <activity
+            android:name=".PlayerListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PlayerProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddPlayerActivity"
+            android:exported="false" />
+            
+        <!-- Club and Manager Activities -->
+        <activity
+            android:name=".ClubListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ClubDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ManagerListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ManagerProfileActivity"
+            android:exported="false" />
+            
+        <!-- Transfer Activities -->
+        <activity
+            android:name=".TransferRequestActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TransferMarketActivity"
+            android:exported="false" />
+            
+        <!-- Admin Activities -->
+        <activity
+            android:name=".PendingApprovalsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RegistrationApprovalActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>

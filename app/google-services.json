@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "223584424914",
+    "project_id": "coachesapp-95527",
+    "storage_bucket": "coachesapp-95527.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:223584424914:android:f026930b7b9cd44e21ee0b",
+        "android_client_info": {
+          "package_name": "com.example.coachesapp_android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfwkmfH6grWSoH4zLId69jUew1HUOWZRY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

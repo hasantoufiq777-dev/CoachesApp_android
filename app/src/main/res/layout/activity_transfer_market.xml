@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#f5f5f5">
+
+    <!-- Header -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Transfer Market"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#00897b"/>
+
+            <TextView
+                android:id="@+id/marketInfoText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Available players for transfer"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp"
+                android:textColor="#666"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Search and Filter -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter Position: "
+            android:textSize="14sp"
+            android:layout_marginEnd="8dp"/>
+
+        <Spinner
+            android:id="@+id/positionFilterSpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:visibility="gone"/>
+
+    <!-- Market Players RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/marketPlayersRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false"/>
+
+    <!-- Empty State -->
+    <TextView
+        android:id="@+id/emptyText"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="No players available in the transfer market"
+        android:textAlignment="center"
+        android:textColor="#999"
+        android:gravity="center"
+        android:visibility="gone"/>
+
+    <!-- Back Button -->
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Back"
+        android:backgroundTint="#757575"/>
+</LinearLayout>
