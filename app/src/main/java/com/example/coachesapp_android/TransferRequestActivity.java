@@ -2,6 +2,7 @@ package com.example.coachesapp_android;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransferRequestActivity extends AppCompatActivity {
+    private static final String TAG = "TransferRequestActivity";
     private RecyclerView transferRequestsRecyclerView;
     private ProgressBar progressBar;
     private TextView emptyText;
@@ -121,8 +123,10 @@ public class TransferRequestActivity extends AppCompatActivity {
                     allTransferRequests = transferRequestRepository.findAll();
                 } else if (currentUser.getRole() == Role.CLUB_MANAGER) {
                     // Managers see requests from/to their club
+                    Log.d(TAG, "Manager loading requests for club ID: " + currentUser.getClubId());
                     List<TransferRequest> sourceRequests = transferRequestRepository.findBySourceClubId(currentUser.getClubId());
                     List<TransferRequest> destRequests = transferRequestRepository.findByDestinationClubId(currentUser.getClubId());
+                    Log.d(TAG, "Found " + sourceRequests.size() + " source requests, " + destRequests.size() + " dest requests");
                     allTransferRequests = new ArrayList<>(sourceRequests);
                     for (TransferRequest tr : destRequests) {
                         if (!allTransferRequests.contains(tr)) {
@@ -277,13 +281,21 @@ public class TransferRequestActivity extends AppCompatActivity {
                     return;
                 }
                 
+                Log.d(TAG, "Submitting transfer - Player: " + currentPlayer.getName() + ", SourceClubId: " + currentPlayer.getClubId() + ", DestClubId: " + destinationClub.getId());
+                
                 TransferRequest request = new TransferRequest(
                         currentPlayer.getId(),
                         currentPlayer.getClubId(),
                         destinationClub.getId()
                 );
                 request.setPlayerName(currentPlayer.getName());
-                request.setSourceClubName(clubRepository.findById(currentPlayer.getClubId()).getClubName());
+                
+                if (currentPlayer.getClubId() != null && currentPlayer.getClubId() != 0) {
+                    com.example.coachesapp_android.model.Club sourceClub = clubRepository.findById(currentPlayer.getClubId());
+                    if (sourceClub != null) {
+                        request.setSourceClubName(sourceClub.getClubName());
+                    }
+                }
                 request.setDestinationClubName(destinationClub.getClubName());
                 
                 TransferRequest savedRequest = transferRequestRepository.save(request);
@@ -315,13 +327,21 @@ public class TransferRequestActivity extends AppCompatActivity {
                     return;
                 }
                 
+                Log.d(TAG, "Submitting market transfer - Player: " + currentPlayer.getName() + ", SourceClubId: " + currentPlayer.getClubId());
+                
                 TransferRequest request = new TransferRequest(
                         currentPlayer.getId(),
                         currentPlayer.getClubId(),
                         null // No destination club for market transfer
                 );
                 request.setPlayerName(currentPlayer.getName());
-                request.setSourceClubName(clubRepository.findById(currentPlayer.getClubId()).getClubName());
+                
+                if (currentPlayer.getClubId() != null && currentPlayer.getClubId() != 0) {
+                    com.example.coachesapp_android.model.Club sourceClub = clubRepository.findById(currentPlayer.getClubId());
+                    if (sourceClub != null) {
+                        request.setSourceClubName(sourceClub.getClubName());
+                    }
+                }
                 
                 TransferRequest savedRequest = transferRequestRepository.save(request);
                 

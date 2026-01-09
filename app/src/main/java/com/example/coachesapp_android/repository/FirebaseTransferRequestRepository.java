@@ -74,11 +74,17 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
             Map<String, Object> data = transferRequestToMap(transferRequest);
             String docId = "transfer_" + transferRequest.getId();
 
+            Log.d(TAG, "Saving transfer request: ID=" + transferRequest.getId() + 
+                    ", PlayerId=" + transferRequest.getPlayerId() + 
+                    ", SourceClubId=" + transferRequest.getSourceClubId() + 
+                    ", DestClubId=" + transferRequest.getDestinationClubId() + 
+                    ", Status=" + transferRequest.getStatus());
+
             db.collection(COLLECTION_NAME)
                     .document(docId)
                     .set(data)
                     .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Transfer request saved: " + transferRequest.getId());
+                        Log.d(TAG, "Transfer request saved successfully: " + transferRequest.getId());
                         result.set(transferRequest);
                         latch.countDown();
                     })
@@ -183,13 +189,17 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
         CountDownLatch latch = new CountDownLatch(1);
         List<TransferRequest> result = new ArrayList<>();
 
+        Log.d(TAG, "Querying " + fieldName + " = " + value);
+
         db.collection(COLLECTION_NAME)
                 .whereEqualTo(fieldName, value)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
+                    Log.d(TAG, "Found " + querySnapshot.size() + " documents for " + fieldName + " = " + value);
                     for (DocumentSnapshot doc : querySnapshot) {
                         TransferRequest tr = documentToTransferRequest(doc);
                         if (tr != null) {
+                            Log.d(TAG, "  - Transfer: Player=" + tr.getPlayerName() + ", SourceClub=" + tr.getSourceClubId() + ", Status=" + tr.getStatus());
                             result.add(tr);
                         }
                     }
