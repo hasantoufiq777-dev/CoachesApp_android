@@ -189,7 +189,7 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
         CountDownLatch latch = new CountDownLatch(1);
         List<TransferRequest> result = new ArrayList<>();
 
-        Log.d(TAG, "Querying " + fieldName + " = " + value);
+        Log.d(TAG, "Querying " + fieldName + " = " + value + " (type: " + (value != null ? value.getClass().getSimpleName() : "null") + ")");
 
         db.collection(COLLECTION_NAME)
                 .whereEqualTo(fieldName, value)
@@ -197,6 +197,11 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
                 .addOnSuccessListener(querySnapshot -> {
                     Log.d(TAG, "Found " + querySnapshot.size() + " documents for " + fieldName + " = " + value);
                     for (DocumentSnapshot doc : querySnapshot) {
+                        // Log raw data for debugging
+                        Object rawValue = doc.get(fieldName);
+                        Log.d(TAG, "  - Document " + doc.getId() + ": " + fieldName + " = " + rawValue + 
+                                " (type: " + (rawValue != null ? rawValue.getClass().getSimpleName() : "null") + ")");
+                        
                         TransferRequest tr = documentToTransferRequest(doc);
                         if (tr != null) {
                             Log.d(TAG, "  - Transfer: Player=" + tr.getPlayerName() + ", SourceClub=" + tr.getSourceClubId() + ", Status=" + tr.getStatus());
@@ -311,7 +316,9 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
         map.put("sourceClubId", tr.getSourceClubId());
         map.put("destinationClubId", tr.getDestinationClubId());
         map.put("status", tr.getStatus() != null ? tr.getStatus().name() : null);
+        map.put("transferType", tr.getTransferType() != null ? tr.getTransferType().name() : null);
         map.put("transferFee", tr.getTransferFee());
+        map.put("releaseFee", tr.getReleaseFee());
         map.put("remarks", tr.getRemarks());
         
         // Store player and club names for easier querying
@@ -341,6 +348,7 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
             tr.setSourceClubId(doc.getLong("sourceClubId") != null ? doc.getLong("sourceClubId").intValue() : null);
             tr.setDestinationClubId(doc.getLong("destinationClubId") != null ? doc.getLong("destinationClubId").intValue() : null);
             tr.setTransferFee(doc.getDouble("transferFee"));
+            tr.setReleaseFee(doc.getDouble("releaseFee"));
             tr.setRemarks(doc.getString("remarks"));
             
             tr.setPlayerName(doc.getString("playerName"));
@@ -350,6 +358,15 @@ public class FirebaseTransferRequestRepository implements ITransferRequestReposi
             String statusStr = doc.getString("status");
             if (statusStr != null) {
                 tr.setStatus(TransferRequest.TransferStatus.valueOf(statusStr));
+            }
+
+            String transferTypeStr = doc.getString("transferType");
+            if (transferTypeStr != null) {
+                try {
+                    tr.setTransferType(TransferRequest.TransferType.valueOf(transferTypeStr));
+                } catch (IllegalArgumentException e) {
+                    Log.w(TAG, "Invalid transferType: " + transferTypeStr);
+                }
             }
 
             tr.setRequestDate(timestampToDate(doc.getDate("requestDate")));

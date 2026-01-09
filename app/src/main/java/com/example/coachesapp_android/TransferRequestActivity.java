@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -124,13 +125,27 @@ public class TransferRequestActivity extends AppCompatActivity {
                 } else if (currentUser.getRole() == Role.CLUB_MANAGER) {
                     // Managers see requests from/to their club
                     Log.d(TAG, "Manager loading requests for club ID: " + currentUser.getClubId());
-                    List<TransferRequest> sourceRequests = transferRequestRepository.findBySourceClubId(currentUser.getClubId());
-                    List<TransferRequest> destRequests = transferRequestRepository.findByDestinationClubId(currentUser.getClubId());
-                    Log.d(TAG, "Found " + sourceRequests.size() + " source requests, " + destRequests.size() + " dest requests");
-                    allTransferRequests = new ArrayList<>(sourceRequests);
-                    for (TransferRequest tr : destRequests) {
-                        if (!allTransferRequests.contains(tr)) {
-                            allTransferRequests.add(tr);
+                    
+                    if (currentUser.getClubId() == null || currentUser.getClubId() == 0) {
+                        Log.w(TAG, "Manager has no club assigned!");
+                        allTransferRequests = new ArrayList<>();
+                    } else {
+                        // First, let's see ALL transfers to debug
+                        List<TransferRequest> allTransfers = transferRequestRepository.findAll();
+                        Log.d(TAG, "Total transfers in database: " + allTransfers.size());
+                        for (TransferRequest tr : allTransfers) {
+                            Log.d(TAG, "  - Transfer: ID=" + tr.getId() + ", Player=" + tr.getPlayerName() + 
+                                    ", SourceClubId=" + tr.getSourceClubId() + ", DestClubId=" + tr.getDestinationClubId());
+                        }
+                        
+                        List<TransferRequest> sourceRequests = transferRequestRepository.findBySourceClubId(currentUser.getClubId());
+                        List<TransferRequest> destRequests = transferRequestRepository.findByDestinationClubId(currentUser.getClubId());
+                        Log.d(TAG, "Found " + sourceRequests.size() + " source requests, " + destRequests.size() + " dest requests");
+                        allTransferRequests = new ArrayList<>(sourceRequests);
+                        for (TransferRequest tr : destRequests) {
+                            if (!allTransferRequests.contains(tr)) {
+                                allTransferRequests.add(tr);
+                            }
                         }
                     }
                 } else if (currentUser.getRole() == Role.PLAYER) {
@@ -141,13 +156,22 @@ public class TransferRequestActivity extends AppCompatActivity {
                     }
                 }
 
-                applyFilter(currentFilter);
-
                 runOnUiThread(() -> {
+                    applyFilter(currentFilter);
                     progressBar.setVisibility(View.GONE);
                     if (filteredTransferRequests.isEmpty()) {
                         emptyText.setVisibility(View.VISIBLE);
                         transferRequestsRecyclerView.setVisibility(View.GONE);
+                        
+                        // Show helpful message if manager has no club
+                        if (currentUser.getRole() == Role.CLUB_MANAGER && 
+                            (currentUser.getClubId() == null || currentUser.getClubId() == 0)) {
+                            emptyText.setText("You are not assigned to any club. Please contact the administrator.");
+                        } else if (currentUser.getRole() == Role.CLUB_MANAGER) {
+                            emptyText.setText("No transfer requests for your club yet.");
+                        } else {
+                            emptyText.setText("No transfer requests yet.");
+                        }
                     } else {
                         emptyText.setVisibility(View.GONE);
                         transferRequestsRecyclerView.setVisibility(View.VISIBLE);
@@ -189,22 +213,58 @@ public class TransferRequestActivity extends AppCompatActivity {
     }
 
     private void showNewRequestDialog() {
-        // Show dialog to select transfer type
-        String[] transferTypes = {"Transfer to Specific Club", "Transfer to General Market"};
-        
-        new AlertDialog.Builder(this)
-                .setTitle("Select Transfer Type")
-                .setItems(transferTypes, (dialog, which) -> {
-                    if (which == 0) {
-                        // Direct club transfer
-                        showClubSelectionDialog();
-                    } else {
-                        // General market transfer
-                        showGeneralMarketRequestDialog();
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        // First check if player has a club
+        new Thread(() -> {
+            try {
+                Player currentPlayer = null;
+                if (currentUser.getPlayerId() != null) {
+                    currentPlayer = playerRepository.findById(currentUser.getPlayerId());
+                }
+                
+                if (currentPlayer == null) {
+                    runOnUiThread(() -> {
+                        new AlertDialog.Builder(this)
+                                .setTitle("No Player Profile")
+                                .setMessage("You don't have a player profile yet. Please contact the administrator.")
+                                .setPositiveButton("OK", null)
+                                .show();
+                    });
+                    return;
+                }
+                
+                if (currentPlayer.getClubId() == null || currentPlayer.getClubId() == 0) {
+                    runOnUiThread(() -> {
+                        new AlertDialog.Builder(this)
+                                .setTitle("No Club Assigned")
+                                .setMessage("You must be assigned to a club before requesting a transfer. Please contact your administrator.")
+                                .setPositiveButton("OK", null)
+                                .show();
+                    });
+                    return;
+                }
+                
+                // Player has valid club, show transfer type dialog
+                runOnUiThread(() -> {
+                    String[] transferTypes = {"Transfer to Specific Club", "Transfer to General Market"};
+                    
+                    new AlertDialog.Builder(this)
+                            .setTitle("Select Transfer Type")
+                            .setItems(transferTypes, (dialog, which) -> {
+                                if (which == 0) {
+                                    // Direct club transfer
+                                    showClubSelectionDialog();
+                                } else {
+                                    // General market transfer
+                                    showGeneralMarketRequestDialog();
+                                }
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            }
+        }).start();
     }
     
     private void showClubSelectionDialog() {
@@ -400,45 +460,78 @@ public class TransferRequestActivity extends AppCompatActivity {
     }
     
     private void showReleaseFeeDialog(TransferRequest request) {
-        View dialogView = LayoutInflater.from(this).inflate(android.R.layout.select_dialog_item, null);
-        EditText releaseFeeInput = new EditText(this);
-        releaseFeeInput.setHint("Enter release fee");
-        releaseFeeInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        // Create a properly formatted dialog view
+        LinearLayout dialogLayout = new LinearLayout(this);
+        dialogLayout.setOrientation(LinearLayout.VERTICAL);
+        dialogLayout.setPadding(50, 40, 50, 10);
         
-        new AlertDialog.Builder(this)
+        EditText releaseFeeInput = new EditText(this);
+        releaseFeeInput.setHint("Enter release fee (e.g., 50000)");
+        releaseFeeInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        dialogLayout.addView(releaseFeeInput);
+        
+        Log.d(TAG, "Showing release fee dialog for player: " + request.getPlayerName());
+        
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Approve Market Transfer")
-                .setMessage("Set release fee for " + request.getPlayerName() + " to enter the market")
-                .setView(releaseFeeInput)
-                .setPositiveButton("Approve", (dialog, which) -> {
-                    String feeStr = releaseFeeInput.getText().toString();
-                    double fee = 0;
-                    try {
-                        fee = Double.parseDouble(feeStr);
-                        if (fee <= 0) {
-                            Toast.makeText(this, "Release fee must be greater than 0", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(this, "Invalid fee amount", Toast.LENGTH_SHORT).show();
+                .setMessage("Set release fee for " + request.getPlayerName() + " to enter the transfer market")
+                .setView(dialogLayout)
+                .setPositiveButton("Approve", null) // Set to null, we'll override below
+                .setNegativeButton("Cancel", null)
+                .create();
+        
+        dialog.setOnShowListener(dialogInterface -> {
+            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            button.setOnClickListener(view -> {
+                String feeStr = releaseFeeInput.getText().toString().trim();
+                
+                if (feeStr.isEmpty()) {
+                    Toast.makeText(this, "Please enter a release fee", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
+                double fee = 0;
+                try {
+                    fee = Double.parseDouble(feeStr);
+                    if (fee <= 0) {
+                        Toast.makeText(this, "Release fee must be greater than 0", Toast.LENGTH_SHORT).show();
                         return;
                     }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(this, "Invalid fee amount. Please enter a valid number", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-                    approveMarketTransfer(request, fee);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+                Log.d(TAG, "Approving market transfer with fee: $" + fee);
+                approveMarketTransfer(request, fee);
+                dialog.dismiss();
+            });
+        });
+        
+        dialog.show();
     }
     
     private void approveMarketTransfer(TransferRequest request, double releaseFee) {
+        Log.d(TAG, "Approving market transfer - Player: " + request.getPlayerName() + 
+                ", SourceClubId: " + request.getSourceClubId() + ", ReleaseFee: $" + releaseFee);
+        
         new Thread(() -> {
             request.setStatus(TransferRequest.TransferStatus.IN_MARKET);
             request.setApprovedBySourceDate(LocalDateTime.now());
             request.setReleaseFee(releaseFee);
+            
+            Log.d(TAG, "Updating transfer request with IN_MARKET status");
             boolean success = transferRequestRepository.update(request);
+            
+            if (success) {
+                Log.d(TAG, "Transfer approved successfully. Player now in market with fee: $" + releaseFee);
+            } else {
+                Log.e(TAG, "Failed to update transfer request to IN_MARKET status");
+            }
             
             runOnUiThread(() -> {
                 if (success) {
-                    Toast.makeText(this, "Transfer approved for market with fee $" + String.format("%.2f", releaseFee), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Player approved for transfer market!\nRelease Fee: $" + String.format("%.2f", releaseFee), Toast.LENGTH_LONG).show();
                     loadTransferRequests();
                 } else {
                     Toast.makeText(this, "Failed to approve transfer", Toast.LENGTH_SHORT).show();

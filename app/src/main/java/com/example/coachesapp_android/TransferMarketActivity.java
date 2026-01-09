@@ -132,26 +132,39 @@ public class TransferMarketActivity extends AppCompatActivity {
 
         new Thread(() -> {
             try {
+                android.util.Log.d("TransferMarket", "Loading market players...");
+                
                 // Get all transfer requests with IN_MARKET status
                 allMarketRequests = transferRequestRepository.findInMarket();
+                android.util.Log.d("TransferMarket", "Found " + allMarketRequests.size() + " players in market");
+                
+                // Log each market player
+                for (TransferRequest req : allMarketRequests) {
+                    android.util.Log.d("TransferMarket", "  - Player: " + req.getPlayerName() + 
+                            ", Fee: $" + req.getReleaseFee() + ", Status: " + req.getStatus());
+                }
                 
                 // Load all players for reference
                 allPlayers = playerRepository.findAll();
+                android.util.Log.d("TransferMarket", "Loaded " + allPlayers.size() + " total players");
 
                 filterMarketPlayers();
 
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
                     if (filteredMarketRequests.isEmpty()) {
+                        android.util.Log.d("TransferMarket", "No players in market after filtering");
                         emptyText.setVisibility(View.VISIBLE);
                         marketPlayersRecyclerView.setVisibility(View.GONE);
                     } else {
+                        android.util.Log.d("TransferMarket", "Displaying " + filteredMarketRequests.size() + " players in market");
                         emptyText.setVisibility(View.GONE);
                         marketPlayersRecyclerView.setVisibility(View.VISIBLE);
                         adapter.notifyDataSetChanged();
                     }
                 });
             } catch (Exception e) {
+                android.util.Log.e("TransferMarket", "Error loading market", e);
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(this, "Error loading market: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -294,7 +307,10 @@ public class TransferMarketActivity extends AppCompatActivity {
             
             // Show release fee if available, otherwise show transfer fee
             Double displayFee = request.getReleaseFee() != null ? request.getReleaseFee() : request.getTransferFee();
-            holder.marketTransferFee.setText("Release Fee: $" + (displayFee != null ? String.format("%.2f", displayFee) : "0"));
+            String feeText = "$" + (displayFee != null ? String.format("%.2f", displayFee) : "0.00");
+            holder.marketTransferFee.setText(feeText);
+            
+            android.util.Log.d("TransferMarket", "Binding player: " + request.getPlayerName() + ", Fee: " + feeText);
 
             // Only show request button for managers (not admin or players)
             if (currentUser.getRole() == Role.CLUB_MANAGER && currentUser.getClubId() != null) {
