@@ -3,9 +3,11 @@ package com.example.coachesapp_android.util;
 import android.content.Context;
 
 import com.example.coachesapp_android.database.FirebaseClubRepository;
+import com.example.coachesapp_android.database.FirebaseGamePlanRepository;
 import com.example.coachesapp_android.database.FirebasePlayerRepository;
 import com.example.coachesapp_android.database.FirebaseUserRepository;
 import com.example.coachesapp_android.database.IClubRepository;
+import com.example.coachesapp_android.database.IGamePlanRepository;
 import com.example.coachesapp_android.database.IPlayerRepository;
 import com.example.coachesapp_android.database.IUserRepository;
 
@@ -19,6 +21,7 @@ public class RepositoryFactory {
     private static IPlayerRepository playerRepository;
     private static IClubRepository clubRepository;
     private static IUserRepository userRepository;
+    private static IGamePlanRepository gamePlanRepository;
     
     /**
      * Initialize the factory with application context.
@@ -63,5 +66,15 @@ public class RepositoryFactory {
      */
     public static FirebaseUserRepository getFirebaseUserRepository() {
         return (FirebaseUserRepository) getUserRepository();
+    }
+    
+    /**
+     * Get GamePlanRepository instance (Firebase).
+     */
+    public static IGamePlanRepository getGamePlanRepository() {
+        if (gamePlanRepository == null) {
+            gamePlanRepository = new FirebaseGamePlanRepository();
+        }
+        return gamePlanRepository;
     }
 }

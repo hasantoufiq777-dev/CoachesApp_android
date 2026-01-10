@@ -64,6 +64,11 @@
         <activity
             android:name=".TransferMarketActivity"
             android:exported="false" />
+        
+        <!-- Game Plan Activity -->
+        <activity
+            android:name=".GamePlanActivity"
+            android:exported="false" />
             
         <!-- Admin Activities -->
         <activity

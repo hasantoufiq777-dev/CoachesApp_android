@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#1a1a1a">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="0dp"
+            app:cardBackgroundColor="#2c3e50">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Game Plan"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"/>
+
+                <TextView
+                    android:id="@+id/clubNameText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Formation: 1-2-2-1"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#B0B0B0"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Soccer Field -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="600dp"
+            android:layout_margin="16dp"
+            android:background="@drawable/soccer_field_bg"
+            android:padding="16dp">
+
+            <!-- Attacker -->
+            <LinearLayout
+                android:id="@+id/attackerSlot"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="40dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:background="@drawable/player_slot_bg">
+
+                <TextView
+                    android:id="@+id/attackerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="FW"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <TextView
+                    android:id="@+id/attackerJersey"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFD700"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <!-- Midfielders -->
+            <LinearLayout
+                android:id="@+id/midfielder1Slot"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/attackerSlot"
+                android:layout_marginTop="80dp"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="60dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:background="@drawable/player_slot_bg">
+
+                <TextView
+                    android:id="@+id/midfielder1Name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MID"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <TextView
+                    android:id="@+id/midfielder1Jersey"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFD700"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/midfielder2Slot"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/attackerSlot"
+                android:layout_marginTop="80dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="60dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:background="@drawable/player_slot_bg">
+
+                <TextView
+                    android:id="@+id/midfielder2Name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MID"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <TextView
+                    android:id="@+id/midfielder2Jersey"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFD700"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <!-- Defenders -->
+            <LinearLayout
+                android:id="@+id/defender1Slot"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/midfielder1Slot"
+                android:layout_marginTop="80dp"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="60dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:background="@drawable/player_slot_bg">
+
+                <TextView
+                    android:id="@+id/defender1Name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DEF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <TextView
+                    android:id="@+id/defender1Jersey"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFD700"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/defender2Slot"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/midfielder2Slot"
+                android:layout_marginTop="80dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="60dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:background="@drawable/player_slot_bg">
+
+                <TextView
+                    android:id="@+id/defender2Name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DEF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <TextView
+                    android:id="@+id/defender2Jersey"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFD700"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <!-- Goalkeeper -->
+            <LinearLayout
+                android:id="@+id/goalkeeperSlot"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="40dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:background="@drawable/player_slot_bg">
+
+                <TextView
+                    android:id="@+id/goalkeeperName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="GK"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <TextView
+                    android:id="@+id/goalkeeperJersey"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFD700"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <Button
+                android:id="@+id/editLineupButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Edit Lineup"
+                android:textSize="16sp"
+                android:backgroundTint="#00897b"
+                android:layout_marginBottom="12dp"/>
+
+            <Button
+                android:id="@+id/saveLineupButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Save Lineup"
+                android:textSize="16sp"
+                android:backgroundTint="#5E35B1"
+                android:layout_marginBottom="12dp"/>
+
+            <Button
+                android:id="@+id/backButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Back"
+                android:textSize="16sp"
+                android:backgroundTint="#e67e22"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

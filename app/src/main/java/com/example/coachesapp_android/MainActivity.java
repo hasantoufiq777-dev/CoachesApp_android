@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
                 
             case CLUB_MANAGER:
                 addMenuItem("Manage Players", PlayerListActivity.class);
+                addMenuItem("Game Plan", GamePlanActivity.class);
                 addMenuItem("Transfer Requests", TransferRequestActivity.class);
                 addMenuItem("Transfer Market", TransferMarketActivity.class);
                 addMenuItem("My Profile", ManagerProfileActivity.class);
