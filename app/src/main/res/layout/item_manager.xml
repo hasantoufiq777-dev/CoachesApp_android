@@ -8,7 +8,8 @@
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp"
     app:strokeWidth="2dp"
-    app:strokeColor="#e67e22">
+    app:strokeColor="#e67e22"
+    app:cardBackgroundColor="#2c3e50">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,9 +30,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Manager Name"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="#212121"/>
+                android:textColor="#FFFFFF"/>
 
             <TextView
                 android:id="@+id/managerAge"
@@ -73,7 +74,7 @@
             android:text="Club: Manchester United"
             android:textSize="14sp"
             android:layout_marginBottom="4dp"
-            android:textColor="#666"/>
+            android:textColor="#B0B0B0"/>
 
         <!-- Email -->
         <TextView
@@ -82,7 +83,7 @@
             android:layout_height="wrap_content"
             android:text="Email: manager@club.com"
             android:textSize="14sp"
-            android:textColor="#666"/>
+            android:textColor="#B0B0B0"/>
 
         <!-- Action Buttons -->
         <LinearLayout

@@ -173,8 +173,8 @@ public class PlayerListActivity extends AppCompatActivity {
         }
         
         ArrayAdapter<String> positionAdapter = new ArrayAdapter<>(
-            this, android.R.layout.simple_spinner_item, positions);
-        positionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            this, R.layout.spinner_item, positions);
+        positionAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         sortPositionSpinner.setAdapter(positionAdapter);
         
         sortPositionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -207,8 +207,8 @@ public class PlayerListActivity extends AppCompatActivity {
         }
         
         ArrayAdapter<String> clubAdapter = new ArrayAdapter<>(
-            this, android.R.layout.simple_spinner_item, clubNames);
-        clubAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            this, R.layout.spinner_item, clubNames);
+        clubAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         sortClubSpinner.setAdapter(clubAdapter);
     }
     
