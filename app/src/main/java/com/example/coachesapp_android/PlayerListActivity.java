@@ -39,6 +39,7 @@ public class PlayerListActivity extends AppCompatActivity {
     private Button backButton;
     private Spinner sortPositionSpinner;
     private Spinner sortHealthSpinner;
+    private Spinner sortClubSpinner;
     IPlayerRepository playerRepository;
     private IClubRepository clubRepository;
     private IUserRepository userRepository;
@@ -67,6 +68,7 @@ public class PlayerListActivity extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         sortPositionSpinner = findViewById(R.id.sortPositionSpinner);
         sortHealthSpinner = findViewById(R.id.sortHealthSpinner);
+        sortClubSpinner = findViewById(R.id.sortClubSpinner);
         
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         players = new ArrayList<>();
@@ -74,6 +76,12 @@ public class PlayerListActivity extends AppCompatActivity {
         clubs = new ArrayList<>();
         
         setupSpinners();
+        
+        // Show club spinner only for admin
+        if (AppState.getInstance().currentUser != null && 
+            AppState.getInstance().currentUser.getRole() == Role.SYSTEM_ADMIN) {
+            sortClubSpinner.setVisibility(View.VISIBLE);
+        }
         
         // Hide add button for players
         if (AppState.getInstance().currentUser != null && 
@@ -156,6 +164,15 @@ public class PlayerListActivity extends AppCompatActivity {
                 android.util.Log.d("PlayerListActivity", "Displayed " + finalPlayers.size() + " players in RecyclerView");
             });
         }).start();
+        
+        // Load clubs for admin filtering
+        if (AppState.getInstance().currentUser != null && 
+            AppState.getInstance().currentUser.getRole() == Role.SYSTEM_ADMIN) {
+            new Thread(() -> {
+                clubs = clubRepository.findAll();
+                runOnUiThread(() -> updateClubSpinner());
+            }).start();
+        }
     }
     
     private void setupSpinners() {
@@ -192,6 +209,17 @@ public class PlayerListActivity extends AppCompatActivity {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
+        
+        // Club spinner (for admin only)
+        sortClubSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                filterPlayers();
+            }
+            
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
     }
     
     private void setupHealthSpinner() {
@@ -206,12 +234,33 @@ public class PlayerListActivity extends AppCompatActivity {
         sortHealthSpinner.setAdapter(healthAdapter);
     }
     
+    private void updateClubSpinner() {
+        List<String> clubNames = new ArrayList<>();
+        clubNames.add("All Clubs");
+        for (Club club : clubs) {
+            clubNames.add(club.getClubName());
+        }
+        
+        ArrayAdapter<String> clubAdapter = new ArrayAdapter<>(
+            this, R.layout.spinner_item, clubNames);
+        clubAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        sortClubSpinner.setAdapter(clubAdapter);
+    }
+    
     private void filterPlayers() {
         if (allPlayers.isEmpty()) return;
         
         String selectedPosition = sortPositionSpinner.getSelectedItem().toString();
         String selectedHealth = sortHealthSpinner.getSelectedItem() != null ? 
                              sortHealthSpinner.getSelectedItem().toString() : "All Players";
+        String selectedClub = "All Clubs";
+        
+        // Get club filter only if user is admin and spinner is visible
+        if (AppState.getInstance().currentUser != null && 
+            AppState.getInstance().currentUser.getRole() == Role.SYSTEM_ADMIN &&
+            sortClubSpinner.getSelectedItem() != null) {
+            selectedClub = sortClubSpinner.getSelectedItem().toString();
+        }
         
         List<Player> filtered = new ArrayList<>();
         
@@ -227,7 +276,10 @@ public class PlayerListActivity extends AppCompatActivity {
             }
             // "All Players" matches everything
             
-            if (matchesPosition && matchesHealth) {
+            boolean matchesClub = selectedClub.equals("All Clubs") || 
+                                (player.getClubView() != null && player.getClubView().equals(selectedClub));
+            
+            if (matchesPosition && matchesHealth && matchesClub) {
                 filtered.add(player);
             }
         }

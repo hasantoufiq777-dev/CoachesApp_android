@@ -71,6 +71,13 @@ public class AddPlayerActivity extends AppCompatActivity {
         errorText = findViewById(R.id.errorText);
         progressBar = findViewById(R.id.progressBar);
         
+        // Hide club spinner - players register to clubs themselves
+        clubSpinner.setVisibility(View.GONE);
+        TextView clubLabel = findViewById(R.id.clubLabel);
+        if (clubLabel != null) {
+            clubLabel.setVisibility(View.GONE);
+        }
+        
         if (progressBar == null) {
             progressBar = new ProgressBar(this);
             progressBar.setVisibility(View.GONE);
@@ -212,8 +219,11 @@ public class AddPlayerActivity extends AppCompatActivity {
         
         // Get selected club
         int clubSelection = clubSpinner.getSelectedItemPosition();
-        if (clubSelection > 0 && clubs != null && clubSelection - 1 < clubs.size()) {
-            player.setClubId(clubs.get(clubSelection - 1).getId());
+        
+        // Don't allow changing club - players register themselves
+        // Keep existing club if editing, otherwise leave null
+        if (editingPlayer != null) {
+            player.setClubId(editingPlayer.getClubId());
         } else {
             player.setClubId(null);
         }
