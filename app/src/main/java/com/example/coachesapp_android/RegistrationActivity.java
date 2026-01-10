@@ -333,6 +333,16 @@ public class RegistrationActivity extends AppCompatActivity {
             Log.d(TAG, "No club assigned (Free Agent)");
         }
         
+        // Save preferred position for players
+        if (role == Role.PLAYER && positionSpinner.getVisibility() == View.VISIBLE) {
+            int positionIndex = positionSpinner.getSelectedItemPosition();
+            if (positionIndex >= 0 && positionIndex < Position.values().length) {
+                Position selectedPosition = Position.values()[positionIndex];
+                user.setPreferredPosition(selectedPosition);
+                Log.d(TAG, "Player selected position: " + selectedPosition.getDisplayName());
+            }
+        }
+        
         // Save to Firestore in background thread
         new Thread(() -> {
             Log.d(TAG, "Saving user to Firestore: " + user.getUsername() + ", ClubId: " + user.getClubId() + ", Approved: " + user.isApproved());

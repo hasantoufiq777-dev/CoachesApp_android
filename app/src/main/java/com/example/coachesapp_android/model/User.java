@@ -10,6 +10,7 @@ public class User {
     private Integer clubId;
     private Integer playerId;
     private Integer managerId;
+    private Position preferredPosition; // For players registering
     private boolean approved; // Approval status for player/manager accounts
 
     public User() {
@@ -104,6 +105,14 @@ public class User {
 
     public void setApproved(boolean approved) {
         this.approved = approved;
+    }
+    
+    public Position getPreferredPosition() {
+        return preferredPosition;
+    }
+    
+    public void setPreferredPosition(Position preferredPosition) {
+        this.preferredPosition = preferredPosition;
     }
 
     @Override

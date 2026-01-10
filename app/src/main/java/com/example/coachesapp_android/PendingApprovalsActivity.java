@@ -153,11 +153,14 @@ public class PendingApprovalsActivity extends AppCompatActivity {
                             player.setName(user.getUsername());
                             player.setAge(user.getAge() != null ? user.getAge() : 18);
                             player.setJersey(0); // Will be assigned later
-                            player.setPosition(Position.FORWARD); // Default position
+                            // Use preferred position from registration, default to FORWARD if not set
+                            Position playerPosition = user.getPreferredPosition() != null ? 
+                                    user.getPreferredPosition() : Position.FORWARD;
+                            player.setPosition(playerPosition);
                             player.setClubId(user.getClubId());
                             player.setInjured(false);
                             
-                            Log.d(TAG, "Creating player with ClubId: " + player.getClubId());
+                            Log.d(TAG, "Creating player with ClubId: " + player.getClubId() + ", Position: " + playerPosition.getDisplayName());
                             Player savedPlayer = playerRepository.save(player);
                             if (savedPlayer != null) {
                                 // Link player to user

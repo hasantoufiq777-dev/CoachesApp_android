@@ -2,6 +2,7 @@ package com.example.coachesapp_android.database;
 
 import android.util.Log;
 
+import com.example.coachesapp_android.model.Position;
 import com.example.coachesapp_android.model.Role;
 import com.example.coachesapp_android.model.User;
 import com.google.firebase.auth.FirebaseAuth;
@@ -42,6 +43,7 @@ public class FirebaseUserRepository implements IUserRepository {
         userData.put("managerId", user.getManagerId() != null ? user.getManagerId() : 0);
         userData.put("age", user.getAge() != null ? user.getAge() : 0);
         userData.put("approved", user.isApproved());
+        userData.put("preferredPosition", user.getPreferredPosition() != null ? user.getPreferredPosition().name() : null);
 
         if (user.getId() != null) {
 
@@ -282,6 +284,16 @@ public class FirebaseUserRepository implements IUserRepository {
             
             Boolean approved = document.getBoolean("approved");
             user.setApproved(approved != null ? approved : false);
+            
+            // Get preferred position for players
+            String positionStr = document.getString("preferredPosition");
+            if (positionStr != null) {
+                try {
+                    user.setPreferredPosition(Position.valueOf(positionStr));
+                } catch (IllegalArgumentException e) {
+                    Log.w(TAG, "Invalid position value: " + positionStr);
+                }
+            }
             
             Log.d(TAG, "documentToUser - User: " + user.getUsername() + 
                   ", Email: " + user.getEmail() + 
