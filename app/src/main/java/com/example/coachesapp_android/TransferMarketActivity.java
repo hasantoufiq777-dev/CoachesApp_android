@@ -191,38 +191,37 @@ public class TransferMarketActivity extends AppCompatActivity {
                     ", SourceClub: " + tr.getSourceClubId() + 
                     ", DestClub: " + tr.getDestinationClubId());
             
-            // For DIRECT_CLUB transfers, only show to the destination club manager
+            // Show ALL IN_MARKET players to ALL managers
+            // The purchase restriction will be handled in the adapter
+            boolean shouldShow = false;
+            
+            // For DIRECT_CLUB transfers, show to ALL managers (they can see but only dest can purchase)
             if (tr.getTransferType() == TransferRequest.TransferType.DIRECT_CLUB) {
-                // Only show if this manager is the destination club manager
-                if (currentUser.getClubId() != null && currentUser.getClubId().equals(tr.getDestinationClubId())) {
-                    android.util.Log.d("TransferMarket", "  -> DIRECT_CLUB match! Adding to filtered list");
-                    // Apply position filter if needed
-                    if (selectedPosition == null) {
-                        filteredMarketRequests.add(tr);
-                    } else {
-                        Player player = getPlayerById(tr.getPlayerId());
-                        if (player != null && player.getPosition() == selectedPosition) {
-                            filteredMarketRequests.add(tr);
-                        }
-                    }
-                } else {
-                    android.util.Log.d("TransferMarket", "  -> DIRECT_CLUB but not for this manager (dest=" + tr.getDestinationClubId() + ")");
-                }
+                shouldShow = true;
+                android.util.Log.d("TransferMarket", "  -> DIRECT_CLUB transfer - showing to all managers");
             } else {
                 // GENERAL_MARKET transfers - show to everyone except source club
                 if (currentUser.getClubId() == null || !currentUser.getClubId().equals(tr.getSourceClubId())) {
-                    android.util.Log.d("TransferMarket", "  -> GENERAL_MARKET match! Adding to filtered list");
-                    // Apply position filter if needed
-                    if (selectedPosition == null) {
-                        filteredMarketRequests.add(tr);
-                    } else {
-                        Player player = getPlayerById(tr.getPlayerId());
-                        if (player != null && player.getPosition() == selectedPosition) {
-                            filteredMarketRequests.add(tr);
-                        }
-                    }
+                    shouldShow = true;
+                    android.util.Log.d("TransferMarket", "  -> GENERAL_MARKET - showing (not source club)");
                 } else {
-                    android.util.Log.d("TransferMarket", "  -> GENERAL_MARKET but from own club, skipping");
+                    android.util.Log.d("TransferMarket", "  -> GENERAL_MARKET from own club, skipping");
+                }
+            }
+            
+            if (shouldShow) {
+                // Apply position filter if needed
+                if (selectedPosition == null) {
+                    filteredMarketRequests.add(tr);
+                    android.util.Log.d("TransferMarket", "  -> Added to filtered list (no position filter)");
+                } else {
+                    Player player = getPlayerById(tr.getPlayerId());
+                    if (player != null && player.getPosition() == selectedPosition) {
+                        filteredMarketRequests.add(tr);
+                        android.util.Log.d("TransferMarket", "  -> Added to filtered list (position match)");
+                    } else {
+                        android.util.Log.d("TransferMarket", "  -> Filtered out by position");
+                    }
                 }
             }
         }
@@ -401,14 +400,37 @@ public class TransferMarketActivity extends AppCompatActivity {
             
             android.util.Log.d("TransferMarket", "Binding player: " + request.getPlayerName() + ", Fee: " + feeText);
 
-            // Only show request button for managers (not admin or players)
+            // Handle purchase button visibility and functionality
             if (currentUser.getRole() == Role.CLUB_MANAGER && currentUser.getClubId() != null) {
-                // Don't allow purchasing from same club
-                if (!currentUser.getClubId().equals(request.getSourceClubId())) {
-                    holder.requestTransferButton.setVisibility(View.VISIBLE);
-                    holder.requestTransferButton.setOnClickListener(v -> showPurchaseDialog(request, player));
+                // For DIRECT_CLUB transfers
+                if (request.getTransferType() == TransferRequest.TransferType.DIRECT_CLUB) {
+                    // Only destination manager can purchase
+                    if (currentUser.getClubId().equals(request.getDestinationClubId())) {
+                        holder.requestTransferButton.setVisibility(View.VISIBLE);
+                        holder.requestTransferButton.setEnabled(true);
+                        holder.requestTransferButton.setText("Purchase");
+                        holder.requestTransferButton.setOnClickListener(v -> showPurchaseDialog(request, player));
+                        android.util.Log.d("TransferMarket", "  -> Purchase button ENABLED (destination manager)");
+                    } else {
+                        // Other managers can see but not purchase
+                        holder.requestTransferButton.setVisibility(View.VISIBLE);
+                        holder.requestTransferButton.setEnabled(false);
+                        holder.requestTransferButton.setText("Reserved");
+                        holder.requestTransferButton.setAlpha(0.5f);
+                        android.util.Log.d("TransferMarket", "  -> Purchase button DISABLED (not destination manager)");
+                    }
                 } else {
-                    holder.requestTransferButton.setVisibility(View.GONE);
+                    // GENERAL_MARKET - anyone except source club can purchase
+                    if (!currentUser.getClubId().equals(request.getSourceClubId())) {
+                        holder.requestTransferButton.setVisibility(View.VISIBLE);
+                        holder.requestTransferButton.setEnabled(true);
+                        holder.requestTransferButton.setText("Purchase");
+                        holder.requestTransferButton.setAlpha(1.0f);
+                        holder.requestTransferButton.setOnClickListener(v -> showPurchaseDialog(request, player));
+                        android.util.Log.d("TransferMarket", "  -> Purchase button ENABLED (general market)");
+                    } else {
+                        holder.requestTransferButton.setVisibility(View.GONE);
+                    }
                 }
             } else {
                 holder.requestTransferButton.setVisibility(View.GONE);
