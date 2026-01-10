@@ -44,7 +44,7 @@
             android:paddingEnd="12dp"/>
 
         <Spinner
-            android:id="@+id/sortClubSpinner"
+            android:id="@+id/sortHealthSpinner"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"

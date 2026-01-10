@@ -38,7 +38,7 @@ public class PlayerListActivity extends AppCompatActivity {
     private Button addPlayerButton;
     private Button backButton;
     private Spinner sortPositionSpinner;
-    private Spinner sortClubSpinner;
+    private Spinner sortHealthSpinner;
     IPlayerRepository playerRepository;
     private IClubRepository clubRepository;
     private IUserRepository userRepository;
@@ -66,7 +66,7 @@ public class PlayerListActivity extends AppCompatActivity {
         addPlayerButton = findViewById(R.id.addPlayerButton);
         backButton = findViewById(R.id.backButton);
         sortPositionSpinner = findViewById(R.id.sortPositionSpinner);
-        sortClubSpinner = findViewById(R.id.sortClubSpinner);
+        sortHealthSpinner = findViewById(R.id.sortHealthSpinner);
         
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         players = new ArrayList<>();
@@ -156,12 +156,6 @@ public class PlayerListActivity extends AppCompatActivity {
                 android.util.Log.d("PlayerListActivity", "Displayed " + finalPlayers.size() + " players in RecyclerView");
             });
         }).start();
-        
-        // Load clubs for filtering
-        new Thread(() -> {
-            clubs = clubRepository.findAll();
-            runOnUiThread(() -> updateClubSpinner());
-        }).start();
     }
     
     private void setupSpinners() {
@@ -187,8 +181,9 @@ public class PlayerListActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {}
         });
         
-        // Club spinner
-        sortClubSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        // Health status spinner
+        setupHealthSpinner();
+        sortHealthSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 filterPlayers();
@@ -199,35 +194,40 @@ public class PlayerListActivity extends AppCompatActivity {
         });
     }
     
-    private void updateClubSpinner() {
-        List<String> clubNames = new ArrayList<>();
-        clubNames.add("All Clubs");
-        for (Club club : clubs) {
-            clubNames.add(club.getClubName());
-        }
+    private void setupHealthSpinner() {
+        List<String> healthOptions = new ArrayList<>();
+        healthOptions.add("All Players");
+        healthOptions.add("Healthy");
+        healthOptions.add("Injured");
         
-        ArrayAdapter<String> clubAdapter = new ArrayAdapter<>(
-            this, R.layout.spinner_item, clubNames);
-        clubAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-        sortClubSpinner.setAdapter(clubAdapter);
+        ArrayAdapter<String> healthAdapter = new ArrayAdapter<>(
+            this, R.layout.spinner_item, healthOptions);
+        healthAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        sortHealthSpinner.setAdapter(healthAdapter);
     }
     
     private void filterPlayers() {
         if (allPlayers.isEmpty()) return;
         
         String selectedPosition = sortPositionSpinner.getSelectedItem().toString();
-        String selectedClub = sortClubSpinner.getSelectedItem() != null ? 
-                             sortClubSpinner.getSelectedItem().toString() : "All Clubs";
+        String selectedHealth = sortHealthSpinner.getSelectedItem() != null ? 
+                             sortHealthSpinner.getSelectedItem().toString() : "All Players";
         
         List<Player> filtered = new ArrayList<>();
         
         for (Player player : allPlayers) {
             boolean matchesPosition = selectedPosition.equals("All Positions") || 
                                     player.getPosition().getDisplayName().equals(selectedPosition);
-            boolean matchesClub = selectedClub.equals("All Clubs") || 
-                                (player.getClubView() != null && player.getClubView().equals(selectedClub));
             
-            if (matchesPosition && matchesClub) {
+            boolean matchesHealth = true;
+            if (selectedHealth.equals("Healthy")) {
+                matchesHealth = !player.isInjured();
+            } else if (selectedHealth.equals("Injured")) {
+                matchesHealth = player.isInjured();
+            }
+            // "All Players" matches everything
+            
+            if (matchesPosition && matchesHealth) {
                 filtered.add(player);
             }
         }
