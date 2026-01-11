@@ -77,10 +77,13 @@ public class PlayerListActivity extends AppCompatActivity {
         
         setupSpinners();
         
-        // Show club spinner only for admin
+        // Show club spinner for admin or club owner
         if (AppState.getInstance().currentUser != null && 
-            AppState.getInstance().currentUser.getRole() == Role.SYSTEM_ADMIN) {
+            (AppState.getInstance().currentUser.getRole() == Role.SYSTEM_ADMIN ||
+             AppState.getInstance().currentUser.getRole() == Role.CLUB_OWNER)) {
             sortClubSpinner.setVisibility(View.VISIBLE);
+            // Load clubs immediately for filtering
+            loadClubs();
         }
         
         // Hide add button for players
@@ -95,6 +98,12 @@ public class PlayerListActivity extends AppCompatActivity {
         new Thread(() -> {
             List<Player> loadedPlayers = new ArrayList<>();
             
+            // Check if we're viewing a specific club's players (from manager list)
+            Integer filterClubId = getIntent().getIntExtra("clubId", -1);
+            if (filterClubId == -1) {
+                filterClubId = null;
+            }
+            
             if (AppState.getInstance().currentUser != null) {
                 Role role = AppState.getInstance().currentUser.getRole();
                 Integer currentUserClubId = AppState.getInstance().currentUser.getClubId();
@@ -103,8 +112,15 @@ public class PlayerListActivity extends AppCompatActivity {
                 android.util.Log.d("PlayerListActivity", "User: " + AppState.getInstance().currentUser.getUsername());
                 android.util.Log.d("PlayerListActivity", "Role: " + role);
                 android.util.Log.d("PlayerListActivity", "User ClubId: " + currentUserClubId);
+                android.util.Log.d("PlayerListActivity", "Filter ClubId from intent: " + filterClubId);
                 
-                if (role == Role.SYSTEM_ADMIN || role == Role.CLUB_OWNER) {
+                // If filterClubId is set (viewing from manager list), use it regardless of role
+                if (filterClubId != null) {
+                    android.util.Log.d("PlayerListActivity", "Loading players for specific club: " + filterClubId);
+                    loadedPlayers = playerRepository.findByClubId(filterClubId);
+                    android.util.Log.d("PlayerListActivity", "Loaded " + loadedPlayers.size() + " players for club " + filterClubId);
+                } else if (role == Role.SYSTEM_ADMIN || role == Role.CLUB_OWNER) {
+                    // Admin and owner can see all players
                     loadedPlayers = playerRepository.findAll();
                     android.util.Log.d("PlayerListActivity", "Admin/Owner loaded " + loadedPlayers.size() + " total players");
                 } else if (role == Role.CLUB_MANAGER) {
@@ -164,15 +180,13 @@ public class PlayerListActivity extends AppCompatActivity {
                 android.util.Log.d("PlayerListActivity", "Displayed " + finalPlayers.size() + " players in RecyclerView");
             });
         }).start();
-        
-        // Load clubs for admin filtering
-        if (AppState.getInstance().currentUser != null && 
-            AppState.getInstance().currentUser.getRole() == Role.SYSTEM_ADMIN) {
-            new Thread(() -> {
-                clubs = clubRepository.findAll();
-                runOnUiThread(() -> updateClubSpinner());
-            }).start();
-        }
+    }
+    
+    private void loadClubs() {
+        new Thread(() -> {
+            clubs = clubRepository.findAll();
+            runOnUiThread(() -> updateClubSpinner());
+        }).start();
     }
     
     private void setupSpinners() {
@@ -255,9 +269,10 @@ public class PlayerListActivity extends AppCompatActivity {
                              sortHealthSpinner.getSelectedItem().toString() : "All Players";
         String selectedClub = "All Clubs";
         
-        // Get club filter only if user is admin and spinner is visible
+        // Get club filter only if user is admin/owner and spinner is visible
         if (AppState.getInstance().currentUser != null && 
-            AppState.getInstance().currentUser.getRole() == Role.SYSTEM_ADMIN &&
+            (AppState.getInstance().currentUser.getRole() == Role.SYSTEM_ADMIN ||
+             AppState.getInstance().currentUser.getRole() == Role.CLUB_OWNER) &&
             sortClubSpinner.getSelectedItem() != null) {
             selectedClub = sortClubSpinner.getSelectedItem().toString();
         }
